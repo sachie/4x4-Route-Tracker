@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="positive_toast_color">#e700640f</color>
+    <color name="negative_toast_color">#e78e0003</color>
+    <color name="primary_color">#ffb42c28</color>
+    <color name="fab_pressed">#ffe33631</color>
+    <color name="fab_ripple">#56e1312d</color>
+</resources>

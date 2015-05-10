@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Route Tracker</string>
+    <string name="title_activity_login">Login</string>
+    <string name="shared_prefs_file_name">4x4RouteTrackerSharedPreferenceFile</string>
+    <string name="login_button_text">Login</string>
+    <string name="splash_image_description">Splash screen image.</string>
+</resources>
