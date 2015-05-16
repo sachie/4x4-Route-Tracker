@@ -1,6 +1,7 @@
 package team4x4.trackers.routetracker.adapters;
 
 import android.content.Context;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +16,7 @@ import java.util.List;
 
 import team4x4.trackers.routetracker.R;
 import team4x4.trackers.routetracker.RoutesApplication;
+import team4x4.trackers.routetracker.fragments.DetailedRouteFragment;
 import team4x4.trackers.routetracker.models.Route;
 import team4x4.trackers.routetracker.utilities.DatabaseHandler;
 
@@ -37,6 +39,11 @@ public class RouteRecyclerViewAdapter extends RecyclerView.Adapter<RouteRecycler
      * Filter instance for the adapter.
      */
     private RouteFilter mFilter = new RouteFilter();
+
+    /**
+     * Detailed Route Fragment Instance
+     */
+    private DetailedRouteFragment detailedRouteFragment = new DetailedRouteFragment();
 
     /**
      * Default constructor.
@@ -76,7 +83,7 @@ public class RouteRecyclerViewAdapter extends RecyclerView.Adapter<RouteRecycler
      * @param position Position of the item on the list.
      */
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, int position) {
         final Route route = mRouteList.get(position);
         holder.mTitleTextView.setText(route.getTitle());
         String difficultyStars = "";
@@ -89,6 +96,12 @@ public class RouteRecyclerViewAdapter extends RecyclerView.Adapter<RouteRecycler
             @Override
             public void onClick(View v) {
                 RoutesApplication.toast(mContext, route.getTitle() + ": Detail screen to be completed...", Toast.LENGTH_LONG, false);
+                FragmentActivity activity = ((FragmentActivity)mContext);
+                activity.getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.route_frame_layout, detailedRouteFragment, "detailedRouteFragment")
+                        .addToBackStack(null)
+                        .commit();
             }
         });
     }
