@@ -58,7 +58,7 @@ public class Coordinate extends Model {
      *
      * @return Latitude of the coordinate.
      */
-    public double getLatitudes() {
+    public double getLatitude() {
         return mLatitude;
     }
 
@@ -67,7 +67,7 @@ public class Coordinate extends Model {
      *
      * @param mLatitude Latitude of the coordinate.
      */
-    public void setLatitudes(double mLatitude) {
+    public void setLatitude(double mLatitude) {
         this.mLatitude = mLatitude;
     }
 
@@ -76,7 +76,7 @@ public class Coordinate extends Model {
      *
      * @return Longitude of the coordinate.
      */
-    public double getLongitudes() {
+    public double getLongitude() {
         return mLongitude;
     }
 
@@ -85,7 +85,7 @@ public class Coordinate extends Model {
      *
      * @param mLongitude Longitude of the coordinate.
      */
-    public void setLongitudes(double mLongitude) {
+    public void setLongitude(double mLongitude) {
         this.mLongitude = mLongitude;
     }
 }

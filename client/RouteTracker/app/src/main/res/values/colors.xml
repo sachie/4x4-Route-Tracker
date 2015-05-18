@@ -5,4 +5,5 @@
     <color name="primary_color">#ffb42c28</color>
     <color name="fab_pressed">#ffe33631</color>
     <color name="fab_ripple">#56e1312d</color>
+    <color name="poly_line_color">#ff0007ff</color>
 </resources>

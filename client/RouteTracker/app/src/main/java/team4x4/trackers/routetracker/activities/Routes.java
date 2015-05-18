@@ -71,6 +71,7 @@ public class Routes extends AppCompatActivity {
 
     /**
      * Called after the fragments recycler view references are created.
+     * (Used by event bus)
      */
     public void onEvent(RecyclerViewLoadedEvent event) {
         mRecordActionButton.attachToRecyclerView(mRouteListFragment.getRouteRecyclerView());
@@ -110,6 +111,22 @@ public class Routes extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    /**
+     * Called when the back button is pressed.
+     * Overridden to check the backstack in a child fragment manager.
+     * (Work around for a bug in fragment managers)
+     */
+    @Override
+    public void onBackPressed() {
+        if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+            getSupportFragmentManager().popBackStack();
+        } else if (mRouteListFragment != null && mRouteListFragment.getChildFragmentManager().getBackStackEntryCount() > 0) {
+            mRouteListFragment.getChildFragmentManager().popBackStack();
+        } else {
+            super.onBackPressed();
+        }
     }
 
     /**

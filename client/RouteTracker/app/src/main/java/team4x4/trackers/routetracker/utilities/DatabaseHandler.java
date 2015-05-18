@@ -19,4 +19,14 @@ public class DatabaseHandler {
     public static List<Route> getRouteList() {
         return new Select().from(Route.class).execute();
     }
+
+    /**
+     * Gets a route with the given ID.
+     *
+     * @param id ID of the route to fetch.
+     * @return Required route.
+     */
+    public static Route getRouteById(int id) {
+        return Route.load(Route.class, id);
+    }
 }

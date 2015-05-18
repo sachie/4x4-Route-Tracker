@@ -130,7 +130,7 @@ public class Route extends Model {
      *
      * @return Coordinates of the route as a list.
      */
-    public List<Coordinate> getCoordinateArray() {
+    public List<Coordinate> getCoordinates() {
         return getMany(Coordinate.class, "Route");
     }
 
