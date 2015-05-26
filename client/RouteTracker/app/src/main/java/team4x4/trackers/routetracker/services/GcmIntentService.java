@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package team4x4.trackers.routetracker;
+package team4x4.trackers.routetracker.services;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
@@ -28,8 +28,11 @@ import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import de.greenrobot.event.EventBus;
+import team4x4.trackers.routetracker.R;
 import team4x4.trackers.routetracker.activities.Routes;
-import team4x4.trackers.routetracker.models.Route;
+import team4x4.trackers.routetracker.tasks.EventResults.PushNotificationEvent;
+import team4x4.trackers.routetracker.utilities.RouteSyncManager;
 
 /**
  * This {@code IntentService} does the actual handling of the GCM message.
@@ -87,6 +90,7 @@ public class GcmIntentService extends IntentService {
                 Log.i(TAG, "Received: " + extras.toString());
             }
         }
+        EventBus.getDefault().post(new PushNotificationEvent());
         // Release the wake lock provided by the WakefulBroadcastReceiver.
         GcmBroadcastReceiver.completeWakefulIntent(intent);
     }

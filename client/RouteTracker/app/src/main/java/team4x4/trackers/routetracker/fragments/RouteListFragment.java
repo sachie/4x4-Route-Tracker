@@ -10,7 +10,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -22,13 +21,14 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import de.greenrobot.event.EventBus;
 import team4x4.trackers.routetracker.R;
-import team4x4.trackers.routetracker.RoutesApplication;
 import team4x4.trackers.routetracker.adapters.RecyclerViewScrollHandler;
 import team4x4.trackers.routetracker.adapters.RouteRecyclerViewAdapter;
 import team4x4.trackers.routetracker.models.Coordinate;
 import team4x4.trackers.routetracker.models.Route;
 import team4x4.trackers.routetracker.tasks.EventResults.RecyclerViewLoadedEvent;
+import team4x4.trackers.routetracker.tasks.EventResults.SyncCompleteEvent;
 import team4x4.trackers.routetracker.utilities.DatabaseHandler;
+import team4x4.trackers.routetracker.utilities.RouteSyncManager;
 
 /**
  * Fragment to display the list of routes and route details.
@@ -39,6 +39,11 @@ public class RouteListFragment extends Fragment {
      * Recycler view for routes.
      */
     private RecyclerView mRouteRecyclerView;
+
+    /**
+     * Data adapter for the route recycler view.
+     */
+    private RouteRecyclerViewAdapter mRouteRecyclerViewAdapter;
 
     /**
      * Swipe refresh layout for the route list.
@@ -56,6 +61,11 @@ public class RouteListFragment extends Fragment {
     private GoogleMap mGoogleMap;
 
     /**
+     * Id of the route that was last drawn.
+     */
+    private int mDrawnRouteId;
+
+    /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
@@ -69,6 +79,28 @@ public class RouteListFragment extends Fragment {
      */
     public RecyclerView getRouteRecyclerView() {
         return mRouteRecyclerView;
+    }
+
+    /**
+     * Called on fragment creation.
+     * Overridden to register this class to the event bus.
+     *
+     * @param savedInstanceState Saved instance state.
+     */
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        EventBus.getDefault().register(this);
+    }
+
+    /**
+     * Called when the fragment is destroyed.
+     * Overridden to unregister this class from the event bus.
+     */
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
     }
 
     /**
@@ -98,15 +130,26 @@ public class RouteListFragment extends Fragment {
         mRouteRecyclerView = (RecyclerView) view.findViewById(R.id.route_recycler_view);
         mRouteRecyclerView.setHasFixedSize(true);
         mRouteRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        mRouteRecyclerView.setAdapter(new RouteRecyclerViewAdapter() {
+        mRouteRecyclerViewAdapter = new RouteRecyclerViewAdapter() {
             @Override
             public void onClick(View v) {
                 showMapView();
-                drawRoute((((ViewHolder) v.getTag()).mId));
+                mDrawnRouteId = (((ViewHolder) v.getTag()).mServerId);
+                drawRoute();
             }
-        });
+        };
+        mRouteRecyclerView.setAdapter(mRouteRecyclerViewAdapter);
         mRouteRecyclerView.addOnScrollListener(new RecyclerViewScrollHandler());
         EventBus.getDefault().post(new RecyclerViewLoadedEvent());
+    }
+
+    /**
+     * Called after a sync completes.
+     * (Used by event bus)
+     */
+    public void onEvent(SyncCompleteEvent event) {
+        mRouteRecyclerViewAdapter.update();
+        drawRoute();
     }
 
     /**
@@ -148,11 +191,18 @@ public class RouteListFragment extends Fragment {
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                RouteSyncManager.syncRoutes(getActivity(), new Runnable() {
+                    @Override
+                    public void run() {
+                        if (mSwipeRefreshLayout.isRefreshing()) {
+                            mSwipeRefreshLayout.setRefreshing(false);
+                        }
+                    }
+                }, true);
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         mSwipeRefreshLayout.setRefreshing(false);
-                        RoutesApplication.toast(getActivity(), "Sync completed.", Toast.LENGTH_SHORT, true);
                     }
                 }, 3000);
             }
@@ -173,24 +223,26 @@ public class RouteListFragment extends Fragment {
     /**
      * Draws the route on the map.
      */
-    private void drawRoute(int routeId) {
+    private void drawRoute() {
         mGoogleMap.clear();
-        Route routeToDraw = DatabaseHandler.getRouteById(routeId);
-        PolylineOptions polylineOptions = new PolylineOptions();
-        polylineOptions.color(R.color.poly_line_color);
-        for (Coordinate coordinate : routeToDraw.getCoordinates()) {
-            polylineOptions.add(new LatLng(coordinate.getLatitude(), coordinate.getLongitude()));
-        }
-        mGoogleMap.addPolyline(polylineOptions);
-        final LatLngBounds.Builder builder = new LatLngBounds.Builder();
-        for (LatLng latLng : polylineOptions.getPoints()) {
-            builder.include(latLng);
-        }
-        mGoogleMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
-            @Override
-            public void onMapLoaded() {
-                mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 100));
+        Route routeToDraw = DatabaseHandler.getRouteByServerId(mDrawnRouteId);
+        if (routeToDraw != null && routeToDraw.getCoordinates() != null) {
+            PolylineOptions polylineOptions = new PolylineOptions();
+            polylineOptions.color(R.color.poly_line_color);
+            for (Coordinate coordinate : routeToDraw.getCoordinates()) {
+                polylineOptions.add(new LatLng(coordinate.getLatitude(), coordinate.getLongitude()));
             }
-        });
+            mGoogleMap.addPolyline(polylineOptions);
+            final LatLngBounds.Builder builder = new LatLngBounds.Builder();
+            for (LatLng latLng : polylineOptions.getPoints()) {
+                builder.include(latLng);
+            }
+            mGoogleMap.setOnMapLoadedCallback(new GoogleMap.OnMapLoadedCallback() {
+                @Override
+                public void onMapLoaded() {
+                    mGoogleMap.animateCamera(CameraUpdateFactory.newLatLngBounds(builder.build(), 100));
+                }
+            });
+        }
     }
 }

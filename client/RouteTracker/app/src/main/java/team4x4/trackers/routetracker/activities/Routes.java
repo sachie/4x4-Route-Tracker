@@ -21,18 +21,15 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import de.greenrobot.event.EventBus;
 import team4x4.trackers.routetracker.R;
 import team4x4.trackers.routetracker.fragments.RecordRouteFragment;
 import team4x4.trackers.routetracker.fragments.RouteListFragment;
-import team4x4.trackers.routetracker.models.Coordinate;
-import team4x4.trackers.routetracker.models.Route;
+import team4x4.trackers.routetracker.tasks.EventResults.PushNotificationEvent;
 import team4x4.trackers.routetracker.tasks.EventResults.RecyclerViewLoadedEvent;
-import team4x4.trackers.routetracker.utilities.DatabaseHandler;
+import team4x4.trackers.routetracker.utilities.RouteSyncManager;
 
 /**
  * Activity for the route list screen.
@@ -41,9 +38,23 @@ import team4x4.trackers.routetracker.utilities.DatabaseHandler;
 public class Routes extends AppCompatActivity {
 
     public static final String EXTRA_MESSAGE = "message";
+
     public static final String PROPERTY_REG_ID = "registration_id";
+
+    /**
+     * Tag used on log messages.
+     */
+    static final String TAG = "4X4 Tracker";
+
     private static final String PROPERTY_APP_VERSION = "appVersion";
+
     private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+
+    /**
+     * FAB for initiation a record session.
+     */
+    @ViewById(R.id.record_action_button)
+    protected FloatingActionButton mRecordActionButton;
 
     /**
      * Substitute you own sender ID here. This is the project number you got
@@ -51,21 +62,13 @@ public class Routes extends AppCompatActivity {
      */
     String SENDER_ID = "404429574037";
 
-    /**
-     * Tag used on log messages.
-     */
-    static final String TAG = "4X4 Tracker";
+    GoogleCloudMessaging mGoogleCloudMessagingClient;
 
-    GoogleCloudMessaging gcm;
-    AtomicInteger msgId = new AtomicInteger();
-    Context context;
-    String regid;
+    AtomicInteger mMessageId = new AtomicInteger();
 
-    /**
-     * FAB for initiation a record session.
-     */
-    @ViewById(R.id.record_action_button)
-    protected FloatingActionButton mRecordActionButton;
+    Context mContext;
+
+    String mRegisterId;
 
     /**
      * Route list fragment instance.
@@ -76,6 +79,20 @@ public class Routes extends AppCompatActivity {
      * Record route fragment instance.
      */
     private RecordRouteFragment mRecordRouteFragment = new RecordRouteFragment();
+
+    /**
+     * @return Application's version code from the {@code PackageManager}.
+     */
+    private static int getAppVersion(Context context) {
+        try {
+            PackageInfo packageInfo = context.getPackageManager()
+                    .getPackageInfo(context.getPackageName(), 0);
+            return packageInfo.versionCode;
+        } catch (PackageManager.NameNotFoundException e) {
+            // should never happen
+            throw new RuntimeException("Could not get package name: " + e);
+        }
+    }
 
     /**
      * Called on activity creation.
@@ -89,19 +106,19 @@ public class Routes extends AppCompatActivity {
         getSupportFragmentManager().beginTransaction()
                 .add(R.id.route_frame_layout, mRouteListFragment, "mRouteListFragment").commit();
         setFragmentManagerListeners();
-        addDummyData();
-        context = getApplicationContext();
+        mContext = getApplicationContext();
         checkPushNotifications();
+        RouteSyncManager.syncRoutes(mContext, null, false);
     }
 
-    private  void checkPushNotifications() {
+    private void checkPushNotifications() {
 
         // Check device for Play Services APK. If check succeeds, proceed with GCM registration.
         if (checkPlayServices()) {
-            gcm = GoogleCloudMessaging.getInstance(this);
-            regid = getRegistrationId(context);
+            mGoogleCloudMessagingClient = GoogleCloudMessaging.getInstance(this);
+            mRegisterId = getRegistrationId(mContext);
 
-            if (regid.isEmpty()) {
+            if (mRegisterId.isEmpty()) {
                 registerInBackground();
             }
         } else {
@@ -128,24 +145,11 @@ public class Routes extends AppCompatActivity {
     }
 
     /**
-     * Adds a few dummy records if the database is empty.
-     * (HAS TO BE REMOVED ONCE THE JSON API IS SET UP)
+     * Called on a push notification event.
+     * (Used by event bus)
      */
-    private void addDummyData() {
-        if (DatabaseHandler.getRouteList().size() == 0) {
-            List<Coordinate> coordinates = new ArrayList<>();
-            coordinates.add(new Coordinate(1, 2));
-            coordinates.add(new Coordinate(2, 1));
-            new Route("Yala Route A", 2, 6, new ArrayList<>(coordinates)).persist();
-            List<Coordinate> coordinates2 = new ArrayList<>();
-            coordinates2.add(new Coordinate(3, 4));
-            coordinates2.add(new Coordinate(4, 3));
-            new Route("Yala Route B", 3, 7, new ArrayList<>(coordinates2)).persist();
-            List<Coordinate> coordinates3 = new ArrayList<>();
-            coordinates3.add(new Coordinate(5, 6));
-            coordinates3.add(new Coordinate(6, 5));
-            new Route("Yala Route C", 4, 3, new ArrayList<>(coordinates3)).persist();
-        }
+    public void onEvent(PushNotificationEvent event) {
+        RouteSyncManager.syncRoutes(mContext, null, false);
     }
 
     /**
@@ -182,7 +186,6 @@ public class Routes extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Check device for Play Services APK.
         checkPlayServices();
     }
 
@@ -198,7 +201,6 @@ public class Routes extends AppCompatActivity {
                 .commit();
         mRecordActionButton.hide();
     }
-
 
     /**
      * Check the device to make sure it has the Google Play Services APK. If
@@ -225,7 +227,7 @@ public class Routes extends AppCompatActivity {
      * {@code SharedPreferences}.
      *
      * @param context application's context.
-     * @param regId registration ID
+     * @param regId   registration ID
      */
     private void storeRegistrationId(Context context, String regId) {
         final SharedPreferences prefs = getGcmPreferences(context);
@@ -239,11 +241,11 @@ public class Routes extends AppCompatActivity {
 
     /**
      * Gets the current registration ID for application on GCM service, if there is one.
-     * <p>
+     * <p/>
      * If result is empty, the app needs to register.
      *
      * @return registration ID, or empty string if there is no existing
-     *         registration ID.
+     * registration ID.
      */
     private String getRegistrationId(Context context) {
         final SharedPreferences prefs = getGcmPreferences(context);
@@ -266,7 +268,7 @@ public class Routes extends AppCompatActivity {
 
     /**
      * Registers the application with GCM servers asynchronously.
-     * <p>
+     * <p/>
      * Stores the registration ID and the app versionCode in the application's
      * shared preferences.
      */
@@ -276,11 +278,11 @@ public class Routes extends AppCompatActivity {
             protected String doInBackground(Void... params) {
                 String msg = "";
                 try {
-                    if (gcm == null) {
-                        gcm = GoogleCloudMessaging.getInstance(context);
+                    if (mGoogleCloudMessagingClient == null) {
+                        mGoogleCloudMessagingClient = GoogleCloudMessaging.getInstance(mContext);
                     }
-                    regid = gcm.register(SENDER_ID);
-                    msg = "Device registered, registration ID=" + regid;
+                    mRegisterId = mGoogleCloudMessagingClient.register(SENDER_ID);
+                    msg = "Device registered, registration ID=" + mRegisterId;
 
                     // You should send the registration ID to your server over HTTP, so it
                     // can use GCM/HTTP or CCS to send messages to your app.
@@ -291,7 +293,7 @@ public class Routes extends AppCompatActivity {
                     // 'from' address in the message.
 
                     // Persist the regID - no need to register again.
-                    storeRegistrationId(context, regid);
+                    storeRegistrationId(mContext, mRegisterId);
                 } catch (IOException ex) {
                     msg = "Error :" + ex.getMessage();
                     // If there is an error, don't just keep trying to register.
@@ -309,20 +311,6 @@ public class Routes extends AppCompatActivity {
     }
 
     /**
-     * @return Application's version code from the {@code PackageManager}.
-     */
-    private static int getAppVersion(Context context) {
-        try {
-            PackageInfo packageInfo = context.getPackageManager()
-                    .getPackageInfo(context.getPackageName(), 0);
-            return packageInfo.versionCode;
-        } catch (PackageManager.NameNotFoundException e) {
-            // should never happen
-            throw new RuntimeException("Could not get package name: " + e);
-        }
-    }
-
-    /**
      * @return Application's {@code SharedPreferences}.
      */
     private SharedPreferences getGcmPreferences(Context context) {
@@ -331,6 +319,7 @@ public class Routes extends AppCompatActivity {
         return getSharedPreferences(Routes.class.getSimpleName(),
                 Context.MODE_PRIVATE);
     }
+
     /**
      * Sends the registration ID to your server over HTTP, so it can use GCM/HTTP or CCS to send
      * messages to your app. Not needed for this demo since the device sends upstream messages

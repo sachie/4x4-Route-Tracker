@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package team4x4.trackers.routetracker;
+package team4x4.trackers.routetracker.services;
 
 import android.app.Activity;
 import android.content.ComponentName;

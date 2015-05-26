@@ -70,7 +70,7 @@ public abstract class RouteRecyclerViewAdapter extends RecyclerView.Adapter<Rout
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         final Route route = mRouteList.get(position);
-        holder.setId(route.getId().intValue());
+        holder.setServerId(route.getServerId());
         holder.mTitleTextView.setText(route.getTitle());
         String difficultyStars = "";
         for (int count = 0; count < route.getDifficultyRating(); count++) {
@@ -109,7 +109,7 @@ public abstract class RouteRecyclerViewAdapter extends RecyclerView.Adapter<Rout
         /**
          * Id of the route.
          */
-        public int mId;
+        public int mServerId;
 
         /**
          * Route title text view.
@@ -145,10 +145,10 @@ public abstract class RouteRecyclerViewAdapter extends RecyclerView.Adapter<Rout
         /**
          * Sets the route id.
          *
-         * @param mId Route id.
+         * @param mServerId Route id.
          */
-        public void setId(int mId) {
-            this.mId = mId;
+        public void setServerId(int mServerId) {
+            this.mServerId = mServerId;
         }
     }
 
@@ -167,11 +167,6 @@ public abstract class RouteRecyclerViewAdapter extends RecyclerView.Adapter<Rout
         protected FilterResults performFiltering(CharSequence constraint) {
             FilterResults filterResults = new FilterResults();
             List<Route> routeList = DatabaseHandler.getRouteList();
-            //TODO: Remove the replications after the API is connected.
-            routeList.addAll(DatabaseHandler.getRouteList());
-            routeList.addAll(DatabaseHandler.getRouteList());
-            routeList.addAll(DatabaseHandler.getRouteList());
-            routeList.addAll(DatabaseHandler.getRouteList());
             filterResults.count = routeList.size();
             filterResults.values = routeList;
             return filterResults;
