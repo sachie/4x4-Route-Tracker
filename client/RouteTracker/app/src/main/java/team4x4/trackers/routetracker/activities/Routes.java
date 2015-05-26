@@ -103,8 +103,15 @@ public class Routes extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EventBus.getDefault().register(this);
-        getSupportFragmentManager().beginTransaction()
-                .add(R.id.route_frame_layout, mRouteListFragment, "mRouteListFragment").commit();
+        getSupportFragmentManager()
+                .beginTransaction()
+                .add(R.id.route_frame_layout, mRecordRouteFragment, "mRouteListFragment")
+                .hide(mRecordRouteFragment)
+                .commit();
+        getSupportFragmentManager()
+                .beginTransaction()
+                .add(R.id.route_frame_layout, mRouteListFragment, "mRouteListFragment")
+                .commit();
         setFragmentManagerListeners();
         mContext = getApplicationContext();
         checkPushNotifications();
@@ -196,7 +203,8 @@ public class Routes extends AppCompatActivity {
     protected void recordRouteButtonClick() {
         getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.route_frame_layout, mRecordRouteFragment, "mRecordRouteFragment")
+                .hide(mRouteListFragment)
+                .show(mRecordRouteFragment)
                 .addToBackStack(null)
                 .commit();
         mRecordActionButton.hide();
