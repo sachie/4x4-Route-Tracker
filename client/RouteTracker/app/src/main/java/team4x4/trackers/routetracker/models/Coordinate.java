@@ -3,6 +3,7 @@ package team4x4.trackers.routetracker.models;
 import com.activeandroid.Model;
 import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Table;
+import com.google.gson.annotations.SerializedName;
 
 /**
  * Model class for route coordinates.
@@ -20,12 +21,14 @@ public class Coordinate extends Model {
      * Latitude of the coordinate.
      */
     @Column(name = "Latitude")
+    @SerializedName("lat")
     private double mLatitude;
 
     /**
      * Longitude of the coordinate.
      */
     @Column(name = "Longitude")
+    @SerializedName("lon")
     private double mLongitude;
 
     /**
