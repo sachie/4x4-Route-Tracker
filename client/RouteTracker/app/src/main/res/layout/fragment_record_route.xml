@@ -1,9 +1,39 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:context=".MapActivity" >
 
     <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/map_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-</RelativeLayout>
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:scrollbars="vertical"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=" Time elapsed: 45mins"
+        android:gravity="right"
+        android:textStyle="bold"
+        android:textColor="#FFFFFFFF"
+        android:id="@+id/text_record_time"
+        android:background="#66000000"
+        android:layout_gravity="center_horizontal|top" />
+
+    <Button
+        android:id="@+id/track_save_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_gravity="bottom"
+        android:background="#6603ff45"
+        android:textColor="#FFFFFFFF"
+        android:layout_marginBottom="10dp"
+        android:text="@string/track_save_button_text"
+        android:onClick="saveButtonClick"/>
+
+
+
+</FrameLayout>
