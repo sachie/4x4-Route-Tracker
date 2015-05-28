@@ -1,7 +1,9 @@
 package team4x4.trackers.routetracker.fragments;
 
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -109,7 +111,6 @@ public class RecordRouteFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 timerHandler.removeCallbacks(timerRunnable);
-
                 showSaveAlert();
             }
         });
@@ -139,6 +140,13 @@ public class RecordRouteFragment extends Fragment {
         LocationManager locationManager = (LocationManager) this
                 .getActivity().getSystemService(Context.LOCATION_SERVICE);
 
+        try {
+            if(!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+                showLocationAlert();
+            }
+        }
+        catch (Exception ex){}
+
         LocationListener locationListener = new LocationListener() {
 
             @Override
@@ -154,10 +162,7 @@ public class RecordRouteFragment extends Fragment {
             @Override
             public void onProviderDisabled(String provider) {
                 Log.d("providerEnabled", "Provider disabled: " + provider);
-                /*
-                Toast.makeText(MainActivity.this,
-                        "Provider disabled: " + provider, Toast.LENGTH_SHORT)
-                        .show();*/
+                showLocationAlert();
             }
 
             @Override
@@ -183,7 +188,27 @@ public class RecordRouteFragment extends Fragment {
     /// UI ACTIONS
 
     private void showLocationAlert() {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                getActivity());
 
+        // set title
+        alertDialogBuilder.setTitle(R.string.record_record_route);
+
+        // set dialog message
+        alertDialogBuilder
+                .setMessage(R.string.record_turn_on_location)
+                .setCancelable(false)
+                .setNeutralButton("Ok", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+
+        // create alert dialog
+        AlertDialog alertDialog = alertDialogBuilder.create();
+
+        // show it
+        alertDialog.show();
     }
 
     private void showSaveAlert(){

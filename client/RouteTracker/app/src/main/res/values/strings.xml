@@ -11,4 +11,6 @@
     <string name="login_password_text">Password</string>
     <string name="record_rate_your_trip">How Do You Rate It?</string>
     <string name="record_save_route">Save Your Route</string>
+    <string name="record_turn_on_location">Please enable your location services to record route</string>
+    <string name="record_record_route">Record Route</string>
 </resources>
