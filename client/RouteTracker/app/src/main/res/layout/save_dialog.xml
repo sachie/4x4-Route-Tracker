@@ -39,7 +39,7 @@
         <EditText
             android:id="@+id/tripTitle"
             android:layout_width="fill_parent"
-            android:layout_height="35dip"
+            android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_marginLeft="5dp"
             android:layout_marginRight="5dp"
