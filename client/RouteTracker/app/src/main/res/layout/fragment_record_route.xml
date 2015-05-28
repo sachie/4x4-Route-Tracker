@@ -31,8 +31,7 @@
         android:background="#6603ff45"
         android:textColor="#FFFFFFFF"
         android:layout_marginBottom="10dp"
-        android:text="@string/track_save_button_text"
-        android:onClick="saveButtonClick"/>
+        android:text="@string/track_save_button_text" />
 
 
 

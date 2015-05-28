@@ -1,5 +1,6 @@
 package team4x4.trackers.routetracker.fragments;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.location.Criteria;
 import android.location.Location;
@@ -11,6 +12,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.RatingBar;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -25,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import team4x4.trackers.routetracker.R;
+import team4x4.trackers.routetracker.activities.Routes;
 import team4x4.trackers.routetracker.models.Coordinate;
 import team4x4.trackers.routetracker.models.Route;
 import team4x4.trackers.routetracker.utilities.DatabaseHandler;
@@ -33,6 +39,9 @@ import team4x4.trackers.routetracker.utilities.DatabaseHandler;
  * Fragment to display details of a route.
  */
 public class RecordRouteFragment extends Fragment {
+
+
+    private Button button ;
 
     /**
      * The map fragment that contains the google map.
@@ -70,6 +79,18 @@ public class RecordRouteFragment extends Fragment {
 
         routeCoordinates = new ArrayList<Location>();
         View view =  inflater.inflate(R.layout.fragment_record_route, container, false);
+
+        button =(Button)view.findViewById(R.id.track_save_button);
+
+
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showSaveAlert();
+            }
+        });
+
+
         try {
             setUpGoogleMap();
         }
@@ -133,6 +154,53 @@ public class RecordRouteFragment extends Fragment {
 
     }
 
+    /// UI ACTIONS
+    private void saveButtonClick(){
+        Toast.makeText(getActivity(),
+                "Test", Toast.LENGTH_SHORT)
+                .show();
+    }
+
+    private void showLocationAlert() {
+
+    }
+
+    private void showSaveAlert(){
+
+        Log.d("", "showSaveAlert");
+        final Dialog dialog = new Dialog(getActivity());
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.save_dialog);
+
+        final RatingBar ratingBar = (RatingBar) dialog.findViewById(R.id.ratingBar);
+
+        Button buttonYes = (Button) dialog.findViewById(R.id.buttonYes);
+        Button buttonNo = (Button) dialog.findViewById(R.id.buttonCancel);
+        final EditText tripTitle= (EditText) dialog.findViewById(R.id.tripTitle);
+
+
+        buttonYes.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getActivity(),
+                        String.valueOf("Trip Name : "+tripTitle.getText().toString() +"\n"+"Rating: "+ratingBar.getRating()),
+                        Toast.LENGTH_SHORT).show();
+                // dialog.dismiss();
+            }
+        });
+
+        buttonNo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d("", "click on cancel");
+                dialog.dismiss();
+
+            }
+        });
+
+        dialog.show();
+
+    }
 
     /// MAP VIEW METHODS
     /**
@@ -232,4 +300,7 @@ public class RecordRouteFragment extends Fragment {
         // LocationManager only to return active providers.
         return locationManager.getBestProvider(criteria, true);
     }
+
+
+
 }

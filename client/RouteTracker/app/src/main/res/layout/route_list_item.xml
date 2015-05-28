@@ -10,25 +10,42 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="3"
-        android:gravity="center"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_vertical"
         android:textSize="18sp" />
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:gravity="center"
         android:layout_weight="2"
         android:orientation="vertical">
+
+        <RatingBar
+            android:id="@+id/ratingBar"
+            style="?android:attr/ratingBarStyleSmall"
+            android:layout_centerHorizontal="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/difficultyLevel"
+            android:layout_gravity="right"
+            android:numStars="4"
+            android:stepSize="1.0"
+            android:rating="0.0" />
 
         <TextView
             android:id="@+id/route_difficulty"
             android:layout_width="match_parent"
             android:layout_height="35dp"
-            android:gravity="center" />
+            android:gravity="center"
+            android:visibility="gone"/>
 
         <TextView
             android:id="@+id/route_distance"
             android:layout_width="match_parent"
             android:layout_height="35dp"
+            android:layout_gravity="right"
             android:gravity="center" />
     </LinearLayout>
 </LinearLayout>

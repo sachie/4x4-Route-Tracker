@@ -6,4 +6,6 @@
     <color name="fab_pressed">#ffe33631</color>
     <color name="fab_ripple">#56e1312d</color>
     <color name="poly_line_color">#ff0007ff</color>
+    <color name="black">#ff000000</color>
+    <color name="white">#ffffffff</color>
 </resources>
