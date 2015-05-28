@@ -32,6 +32,7 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import team4x4.trackers.routetracker.R;
 import team4x4.trackers.routetracker.activities.Routes;
@@ -222,16 +223,17 @@ public class RecordRouteFragment extends Fragment {
 
         Button buttonYes = (Button) dialog.findViewById(R.id.buttonYes);
         Button buttonNo = (Button) dialog.findViewById(R.id.buttonCancel);
-        final EditText tripTitle= (EditText) dialog.findViewById(R.id.tripTitle);
+        final EditText routeTitle = (EditText) dialog.findViewById(R.id.tripTitle);
 
 
         buttonYes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getActivity(),
-                        String.valueOf("Trip Name : "+tripTitle.getText().toString() +"\n"+"Rating: "+ratingBar.getRating()),
-                        Toast.LENGTH_SHORT).show();
+
+                // LINK SAVE CODE HERE
+                // saveRoute(createRouteObject(routeTitle.getText(),ratingBar.getRating());
                 // dialog.dismiss();
+
             }
         });
 
@@ -247,6 +249,27 @@ public class RecordRouteFragment extends Fragment {
 
         dialog.show();
 
+    }
+
+    private Route createRouteObject(String routeName, int rating) {
+        Route route = new Route();
+        route.setTitle(routeName);
+        route.setDifficultyRating(rating);
+
+        List<Coordinate> coordinates = new ArrayList<Coordinate>();
+
+        for (Location location : routeCoordinates) {
+            Coordinate coordinate = new Coordinate(location.getLatitude(), location.getLongitude());
+            coordinates.add(coordinate);
+        }
+        route.setCoordinates(coordinates);
+
+        // TODO:Calculate distance on server. Dummy for the moment
+        Random rn= new Random();
+        int distance = rn.nextInt(10)+1;
+        route.setDistance(distance);
+
+        return route;
     }
 
     /// MAP VIEW METHODS
@@ -319,8 +342,6 @@ public class RecordRouteFragment extends Fragment {
             // pass points array to google map
             drawRoute(routeCoordinates);
         }
-
-        Log.d("BLAH", String.valueOf(location.getLatitude()));
     }
 
     private boolean validateLocation(Location location){
