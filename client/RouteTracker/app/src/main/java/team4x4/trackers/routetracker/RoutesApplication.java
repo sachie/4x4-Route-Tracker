@@ -16,6 +16,8 @@ import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
+import team4x4.trackers.routetracker.utilities.OkHttpStack;
+
 /**
  * Application class. Extends SugarApp to enable SugarORM support.
  * Contains the Volley request queue and methods for toasting.
@@ -34,7 +36,8 @@ public class RoutesApplication extends Application {
      */
     public static synchronized RequestQueue getRequestQueue(Context context) {
         if (mRequestQueue == null) {
-            mRequestQueue = Volley.newRequestQueue(context);
+            // Use the OkHttp HurlStack instance to support the PATCH method on devices running less than API 21
+            mRequestQueue = Volley.newRequestQueue(context, new OkHttpStack());
         }
         return mRequestQueue;
     }

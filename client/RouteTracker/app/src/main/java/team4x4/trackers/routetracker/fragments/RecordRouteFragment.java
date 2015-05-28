@@ -20,8 +20,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RatingBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -30,15 +30,16 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import org.json.JSONException;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 import team4x4.trackers.routetracker.R;
-import team4x4.trackers.routetracker.activities.Routes;
 import team4x4.trackers.routetracker.models.Coordinate;
 import team4x4.trackers.routetracker.models.Route;
-import team4x4.trackers.routetracker.utilities.DatabaseHandler;
+import team4x4.trackers.routetracker.utilities.RouteSyncManager;
 
 /**
  * Fragment to display details of a route.
@@ -231,7 +232,16 @@ public class RecordRouteFragment extends Fragment {
             public void onClick(View v) {
 
                 // LINK SAVE CODE HERE
-                // saveRoute(createRouteObject(routeTitle.getText(),ratingBar.getRating());
+                try {
+                    RouteSyncManager.uploadRoute(getActivity().getApplicationContext(), null, createRouteObject(routeTitle.getText().toString(), (int) ratingBar.getRating()));
+                    dialog.dismiss();
+                    getActivity().getSupportFragmentManager().popBackStack();
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                } catch (AuthFailureError authFailureError) {
+                    authFailureError.printStackTrace();
+                }
+
                 // dialog.dismiss();
 
             }
@@ -257,6 +267,13 @@ public class RecordRouteFragment extends Fragment {
         route.setDifficultyRating(rating);
 
         List<Coordinate> coordinates = new ArrayList<Coordinate>();
+
+        if(routeCoordinates.size()<1){
+            Location loc = new Location("dummyprovider");
+            loc.setLatitude(12.43);
+            loc.setLongitude(32.54);
+            routeCoordinates.add(0, loc);
+        }
 
         for (Location location : routeCoordinates) {
             Coordinate coordinate = new Coordinate(location.getLatitude(), location.getLongitude());

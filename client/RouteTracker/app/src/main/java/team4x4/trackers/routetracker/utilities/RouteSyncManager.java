@@ -4,12 +4,18 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.widget.Toast;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.Arrays;
 
@@ -71,6 +77,30 @@ public class RouteSyncManager {
         };
         JsonArrayRequest request = new JsonArrayRequest(context.getString(R.string.route_url), responseListener, errorListener);
         request.setShouldCache(false);
+        RoutesApplication.getRequestQueue(context).add(request);
+    }
+
+    public static void uploadRoute(final Context context, final Runnable callback, final Route route) throws JSONException, AuthFailureError {
+        int serverId = DatabaseHandler.getRouteList().size();
+        route.setServerId(serverId);
+        JSONObject jsonObject = new JSONObject();
+        Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+        String jsonStr = gson.toJson(route, Route.class);
+        jsonObject.put(String.valueOf(serverId), new JSONObject(jsonStr));
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.PATCH, context.getString(R.string.route_url),jsonObject,
+                new Response.Listener<JSONObject>(){
+                    @Override
+                    public void onResponse(JSONObject response){
+                        RoutesApplication.toast(context, "Upload Successful", Toast.LENGTH_LONG, true);
+                        syncRoutes(context, null, false);
+                    }
+                },
+                new Response.ErrorListener(){
+                    @Override
+                    public void onErrorResponse(VolleyError error){
+                        RoutesApplication.toast(context, "Upload Failed", Toast.LENGTH_LONG, false);
+                    }
+                });
         RoutesApplication.getRequestQueue(context).add(request);
     }
 }

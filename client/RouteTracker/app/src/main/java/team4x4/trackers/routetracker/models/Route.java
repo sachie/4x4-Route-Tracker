@@ -3,6 +3,7 @@ package team4x4.trackers.routetracker.models;
 import com.activeandroid.Model;
 import com.activeandroid.annotation.Column;
 import com.activeandroid.annotation.Table;
+import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
@@ -16,6 +17,7 @@ public class Route extends Model {
     /**
      * Title of the route.
      */
+    @Expose
     @Column(name = "server_id")
     @SerializedName("id")
     private int mServerId;
@@ -23,6 +25,7 @@ public class Route extends Model {
     /**
      * Title of the route.
      */
+    @Expose
     @Column(name = "Title")
     @SerializedName("title")
     private String mTitle;
@@ -30,6 +33,7 @@ public class Route extends Model {
     /**
      * Difficulty rating for the route.
      */
+    @Expose
     @Column(name = "DifficultyRating")
     @SerializedName("difficultyRating")
     private int mDifficultyRating;
@@ -37,6 +41,7 @@ public class Route extends Model {
     /**
      * Distance of the route.
      */
+    @Expose
     @Column(name = "Distance")
     @SerializedName("distance")
     private double mDistance;
@@ -44,6 +49,7 @@ public class Route extends Model {
     /**
      * Coordinates of the route.
      */
+    @Expose
     @SerializedName("coordinates")
     private List<Coordinate> mCoordinates;
 
