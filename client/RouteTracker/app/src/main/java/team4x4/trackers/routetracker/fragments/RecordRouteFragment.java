@@ -7,6 +7,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,6 +17,7 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RatingBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -65,6 +67,27 @@ public class RecordRouteFragment extends Fragment {
     public RecordRouteFragment() {
     }
 
+    TextView timerTextView;
+    long startTime = 0;
+
+    //runs without a timer by reposting this handler at the end of the runnable
+    Handler timerHandler = new Handler();
+    Runnable timerRunnable = new Runnable() {
+
+        @Override
+        public void run() {
+            long millis = System.currentTimeMillis() - startTime;
+            int seconds = (int) (millis / 1000);
+            int minutes = seconds / 60;
+            seconds = seconds % 60;
+
+            timerTextView.setText(String.format("Time Elapsed %d:%02d", minutes, seconds));
+
+            timerHandler.postDelayed(this, 500);
+        }
+    };
+
+
     /**
      * Called on creation of the fragment view.
      *
@@ -79,13 +102,14 @@ public class RecordRouteFragment extends Fragment {
 
         routeCoordinates = new ArrayList<Location>();
         View view =  inflater.inflate(R.layout.fragment_record_route, container, false);
+        timerTextView = (TextView)view.findViewById(R.id.text_record_time);
 
         button =(Button)view.findViewById(R.id.track_save_button);
-
-
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                timerHandler.removeCallbacks(timerRunnable);
+
                 showSaveAlert();
             }
         });
@@ -107,7 +131,9 @@ public class RecordRouteFragment extends Fragment {
         super.onResume();
 
         showMapView();
-        Log.d("Trigger","TRIGGER");
+
+        startTime = System.currentTimeMillis();
+        timerHandler.postDelayed(timerRunnable, 0);
 
         // Don't initialize location manager, retrieve it from system services.
         LocationManager locationManager = (LocationManager) this
@@ -155,11 +181,6 @@ public class RecordRouteFragment extends Fragment {
     }
 
     /// UI ACTIONS
-    private void saveButtonClick(){
-        Toast.makeText(getActivity(),
-                "Test", Toast.LENGTH_SHORT)
-                .show();
-    }
 
     private void showLocationAlert() {
 
@@ -193,6 +214,7 @@ public class RecordRouteFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Log.d("", "click on cancel");
+                timerHandler.postDelayed(timerRunnable, 0);
                 dialog.dismiss();
 
             }
@@ -300,7 +322,5 @@ public class RecordRouteFragment extends Fragment {
         // LocationManager only to return active providers.
         return locationManager.getBestProvider(criteria, true);
     }
-
-
 
 }
