@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -56,9 +57,9 @@ public abstract class RouteRecyclerViewAdapter extends RecyclerView.Adapter<Rout
     public RouteRecyclerViewAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.route_list_item, parent, false);
         TextView mTitleTextView = (TextView) view.findViewById(R.id.route_title);
-        TextView mDifficultyTextView = (TextView) view.findViewById(R.id.route_difficulty);
         TextView mDistanceTextView = (TextView) view.findViewById(R.id.route_distance);
-        return new ViewHolder(view, mTitleTextView, mDifficultyTextView, mDistanceTextView);
+        RatingBar mRatingBar = (RatingBar) view.findViewById(R.id.ratingBarList);
+        return new ViewHolder(view, mTitleTextView, mRatingBar, mDistanceTextView);
     }
 
     /**
@@ -76,7 +77,7 @@ public abstract class RouteRecyclerViewAdapter extends RecyclerView.Adapter<Rout
         for (int count = 0; count < route.getDifficultyRating(); count++) {
             difficultyStars += "*";
         }
-        holder.mDifficultyTextView.setText(difficultyStars);
+        holder.mRatingBar.setRating(route.getDifficultyRating());
         holder.mDistanceTextView.setText("Distance: " + String.valueOf(route.getDistance()) + " KM");
         holder.itemView.setOnClickListener(this);
     }
@@ -117,28 +118,28 @@ public abstract class RouteRecyclerViewAdapter extends RecyclerView.Adapter<Rout
         public TextView mTitleTextView;
 
         /**
-         * Route difficulty rating text view.
-         */
-        public TextView mDifficultyTextView;
-
-        /**
          * Route distance text view.
          */
         public TextView mDistanceTextView;
 
         /**
+         * Route difficulty rating bar.
+         */
+        public RatingBar mRatingBar;
+
+        /**
          * Complete constructor.
-         *
-         * @param itemView            The items view.
+         *  @param itemView            The items view.
          * @param mTitleTextView      Route title text view.
-         * @param mDifficultyTextView Route difficulty rating text view.
+         * @param mRatingBar          Route difficulty rating bar.
          * @param mDistanceTextView   Route distance text view.
          */
-        public ViewHolder(View itemView, TextView mTitleTextView, TextView mDifficultyTextView, TextView mDistanceTextView) {
+        public ViewHolder(View itemView, TextView mTitleTextView, RatingBar mRatingBar, TextView mDistanceTextView) {
             super(itemView);
             this.mTitleTextView = mTitleTextView;
-            this.mDifficultyTextView = mDifficultyTextView;
+
             this.mDistanceTextView = mDistanceTextView;
+            this.mRatingBar = mRatingBar;
             itemView.setTag(this);
         }
 

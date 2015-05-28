@@ -9,6 +9,6 @@
     <string name="route_url">https://4x4routetracker.firebaseio.com/routes.json</string>
     <string name="login_username_text">User Name</string>
     <string name="login_password_text">Password</string>
-    <string name="record_rate_your_trip">Rate Your Route</string>
-    <string name="record_save_route">Save Route</string>
+    <string name="record_rate_your_trip">How Do You Rate It?</string>
+    <string name="record_save_route">Save Your Route</string>
 </resources>
